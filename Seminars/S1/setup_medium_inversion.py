@@ -2,7 +2,7 @@ import numpy as np
 import poisson_discretization_DpDm as pd
 import scipy.sparse.linalg as spsplg
 
-def problem_setup():
+def problem_setup(mx=21, my=21):
     """Setup for the Poisson medium inversion problem"""
 
     # True b: Disk-shaped discontinuity, jump from 1 to 10
@@ -20,8 +20,6 @@ def problem_setup():
     # Domain and discretization parameters
     lim_x = [-1, 1]
     lim_y = [-1, 1]
-    mx = 21
-    my = 21
     order = 5
 
     # Create grid

@@ -29,22 +29,23 @@ def plot_setup():
     fig, axes = plt.subplots(3, 1)
     im1 = axes[0].pcolormesh(X, Y, Y_d, shading="auto")
     axes[0].set_title("Data y_d")
-    axes[0].set_xlabel("x")
-    axes[0].set_ylabel("y")
+    axes[0].set_xlabel("$x_1$")
+    axes[0].set_ylabel("$x_2$")
     fig.colorbar(im1, ax=axes[0])
 
     im2 = axes[1].pcolormesh(X, Y, B0, shading="auto")
     axes[1].set_title("Initial guess b0")
-    axes[1].set_xlabel("x")
-    axes[1].set_ylabel("y")
+    axes[1].set_xlabel("$x_1$")
+    axes[1].set_ylabel("$x_2$")
     fig.colorbar(im2, ax=axes[1])
 
     im3 = axes[2].pcolormesh(X, Y, Y0, shading="auto")
     axes[2].set_title("State y corresponding to initial guess")
-    axes[2].set_xlabel("x")
-    axes[2].set_ylabel("y")
+    axes[2].set_xlabel("$x_1$")
+    axes[2].set_ylabel("$x_2$")
     fig.colorbar(im3, ax=axes[2])
 
+    plt.suptitle("Exercise 19: Setup of the medium inversion problem")
     plt.tight_layout()
 
 
@@ -80,9 +81,9 @@ def plot_gradient_adjoint(mx=41, my=41):
 
     plt.figure()
     im = plt.pcolormesh(X, Y, grad, shading="auto")
-    plt.xlabel("x")
-    plt.ylabel("y")
-    plt.title("Adjoint Gradient of objective function w.r.t b")
+    plt.xlabel("$x_1$")
+    plt.ylabel("$x_2$")
+    plt.title("Exercise 20: Adjoint Gradient of objective function w.r.t b")
     plt.colorbar(im)
     plt.tight_layout()
 
@@ -118,30 +119,6 @@ def compute_gradient_using_fd(b, y_d, u, grid, order, bc_opts, delta=1e-6):
     return gradient
 
 
-def plot_gradient_fd(mx=21, my=21):
-    # Setup problem
-    grid, bc_opts, initial_parameters, true_parameters, order = setup.problem_setup(
-        mx=mx, my=my
-    )
-    # Data and initial guess
-    y_d = true_parameters["y_data"]
-    b0 = initial_parameters["b"]
-    u = true_parameters["u"]
-
-    gradient = compute_gradient_using_fd(b0, y_d, u, grid, order, bc_opts)
-
-    # Plotting
-    X, Y = grid["X"], grid["Y"]
-    grad = np.reshape(gradient, X.shape)
-    plt.figure()
-    im = plt.pcolormesh(X, Y, grad, shading="auto")
-    plt.xlabel("x")
-    plt.ylabel("y")
-    plt.title("Finite Difference Gradient of objective function w.r.t b")
-    plt.colorbar(im)
-    plt.tight_layout()
-
-
 def plot_gradient_difference(mx=21, my=21):
     # Setup problem
     grid, bc_opts, initial_parameters, true_parameters, order = setup.problem_setup(
@@ -158,23 +135,38 @@ def plot_gradient_difference(mx=21, my=21):
 
     # Plotting the difference between the two gradients
     X, Y = grid["X"], grid["Y"]
+    grad_adj = np.reshape(gradient_adjoint, X.shape)
+    grad_fd = np.reshape(gradient_fd, X.shape)
     grad_diff = np.reshape(gradient_adjoint - gradient_fd, X.shape)
     abs_diff = np.abs(grad_diff)
+    
+    # Plotting [[gradient adjoint, gradient fd], [abs difference, difference]]
+    fig, axes = plt.subplots(2, 2, figsize=(10, 8))
+    im1 = axes[0, 0].pcolormesh(X, Y, grad_adj, shading="auto")
+    axes[0, 0].set_title("Gradient (Adjoint)")
+    axes[0, 0].set_xlabel("$x_1$")
+    axes[0, 0].set_ylabel("$x_2$")
+    fig.colorbar(im1, ax=axes[0, 0])
+    
+    im2 = axes[0, 1].pcolormesh(X, Y, grad_fd, shading="auto")
+    axes[0, 1].set_title("Gradient (Finite Difference)")
+    axes[0, 1].set_xlabel("$x_1$")
+    axes[0, 1].set_ylabel("$x_2$")
+    fig.colorbar(im2, ax=axes[0, 1])
+    
+    im3 = axes[1, 0].pcolormesh(X, Y, abs_diff, shading="auto")
+    axes[1, 0].set_title("Absolute Difference")
+    axes[1, 0].set_xlabel("$x_1$")
+    axes[1, 0].set_ylabel("$x_2$")
+    fig.colorbar(im3, ax=axes[1, 0])
+    
+    im4 = axes[1, 1].pcolormesh(X, Y, grad_diff, shading="auto")
+    axes[1, 1].set_title("Difference (Adjoint - FD)")
+    axes[1, 1].set_xlabel("$x_1$")
+    axes[1, 1].set_ylabel("$x_2$")
+    fig.colorbar(im4, ax=axes[1, 1])
 
-    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
-    im1 = axes[0].pcolormesh(X, Y, grad_diff, shading="auto")
-    axes[0].set_title("gradient_adjoint - gradient_fd")
-    axes[0].set_xlabel("x")
-    axes[0].set_ylabel("y")
-    fig.colorbar(im1, ax=axes[0])
-
-    im2 = axes[1].pcolormesh(X, Y, abs_diff, shading="auto")
-    axes[1].set_title("|gradient_adjoint - gradient_fd|")
-    axes[1].set_xlabel("x")
-    axes[1].set_ylabel("y")
-    fig.colorbar(im2, ax=axes[1])
-
-    fig.suptitle("Difference between gradient methods")
+    fig.suptitle("Exercise 21: Difference between gradient methods")
     plt.tight_layout()
 
 
@@ -208,42 +200,52 @@ def exercise_22(mx=21, my=21, plot=True):
     )
     # Data and initial guess
     y_d = true_parameters["y_data"]
+    b_true = true_parameters["b"]
     u = true_parameters["u"]
     b0 = initial_parameters["b"]
 
-    result = BFGS(cost_function, y_d, u, b0, grid, order, bc_opts)
+    result = BFGS(cost_function, y_d, b0, u, grid, order, bc_opts)
     b_sol = result.x
     final_discr = pd.assemble_matrices(grid, order, b_sol, bc_opts)
-    y_sol = final_discr["poisson_solver"](u)
+    y_sol = final_discr["poisson_solver"](b_sol)
 
     # Plotting the results
     if plot:
         X, Y = grid["X"], grid["Y"]
         B_sol = np.reshape(b_sol, X.shape)
         Y_sol = np.reshape(y_sol, X.shape)
+        B_true = np.reshape(b_true, X.shape)
         Y_d = np.reshape(true_parameters["y_data"], X.shape)
 
-        fig, axes = plt.subplots(3, 1)
+        fig, axes = plt.subplots(4, 1, figsize=(8, 12))
+        fig.suptitle("Exercise 22: BFGS optimization")
 
         im1 = axes[0].pcolormesh(X, Y, Y_d, shading="auto")
-        axes[0].set_xlabel("x")
-        axes[0].set_ylabel("y")
+        axes[0].set_xlabel("$x_1$")
+        axes[0].set_ylabel("$x_2$")
         axes[0].set_title("Target state y_d")
         fig.colorbar(im1, ax=axes[0])
-
-        im2 = axes[1].pcolormesh(X, Y, B_sol, shading="auto")
-        axes[1].set_xlabel("x")
-        axes[1].set_ylabel("y")
-        axes[1].set_title("Final material b after BFGS")
+        
+        im2 = axes[1].pcolormesh(X, Y, B_true, shading="auto")
+        axes[1].set_xlabel("$x_1$")
+        axes[1].set_ylabel("$x_2$")
+        axes[1].set_title("True material b")
         fig.colorbar(im2, ax=axes[1])
 
-        im3 = axes[2].pcolormesh(X, Y, Y_sol, shading="auto")
-        axes[2].set_xlabel("x")
-        axes[2].set_ylabel("y")
-        axes[2].set_title("Final state y after BFGS")
+        im3 = axes[2].pcolormesh(X, Y, B_sol, shading="auto")
+        axes[2].set_xlabel("$x_1$")
+        axes[2].set_ylabel("$x_2$")
+        axes[2].set_title("Final material b after BFGS")
         fig.colorbar(im3, ax=axes[2])
 
+        im3 = axes[3].pcolormesh(X, Y, Y_sol, shading="auto")
+        axes[3].set_xlabel("$x_1$")
+        axes[3].set_ylabel("$x_2$")
+        axes[3].set_title("Final state y after BFGS")
+        fig.colorbar(im3, ax=axes[3])
         plt.tight_layout()
+        
+        plt.savefig("./Seminars/S1_S2/Figures/exercise22.png")
     return result
 
 
@@ -284,6 +286,7 @@ def exercise_23(mx=21, my=21, plot=True):
     # Data and initial guess
     y_d = true_parameters["y_data"]
     b_init = initial_parameters["b"]
+    b_true = true_parameters["b"]
     u = true_parameters["u"]
 
     result = BFGS_bl(cost_function, b_init, y_d, u, grid, order, bc_opts)
@@ -299,47 +302,56 @@ def exercise_23(mx=21, my=21, plot=True):
     if plot:
         X, Y = grid["X"], grid["Y"]
         B_sol = np.reshape(b_sol, X.shape)
+        B_true = np.reshape(b_true, X.shape)
         Y_sol = np.reshape(y_sol, X.shape)
         Y_d = np.reshape(true_parameters["y_data"], X.shape)
 
-        fig, axes = plt.subplots(3, 1)
+        fig, axes = plt.subplots(4, 1, figsize=(8, 12))
+        fig.suptitle("Exercise 23: BFGS optimization with transformation")
 
         im1 = axes[0].pcolormesh(X, Y, Y_d, shading="auto")
-        axes[0].set_xlabel("x")
-        axes[0].set_ylabel("y")
+        axes[0].set_xlabel("$x_1$")
+        axes[0].set_ylabel("$x_2$")
         axes[0].set_title("Target state y_d")
         fig.colorbar(im1, ax=axes[0])
-
-        im2 = axes[1].pcolormesh(X, Y, B_sol, shading="auto")
-        axes[1].set_xlabel("x")
-        axes[1].set_ylabel("y")
-        axes[1].set_title("Final material b after BFGS with transformation")
+        
+        im2 = axes[1].pcolormesh(X, Y, B_true, shading="auto")
+        axes[1].set_xlabel("$x_1$")
+        axes[1].set_ylabel("$x_2$")
+        axes[1].set_title("True material b")
         fig.colorbar(im2, ax=axes[1])
 
-        im3 = axes[2].pcolormesh(X, Y, Y_sol, shading="auto")
-        axes[2].set_xlabel("x")
-        axes[2].set_ylabel("y")
-        axes[2].set_title("Final state y after BFGS with transformation")
+        im3 = axes[2].pcolormesh(X, Y, B_sol, shading="auto")
+        axes[2].set_xlabel("$x_1$")
+        axes[2].set_ylabel("$x_2$")
+        axes[2].set_title("Final material b after BFGS with transformation")
         fig.colorbar(im3, ax=axes[2])
 
+        im3 = axes[3].pcolormesh(X, Y, Y_sol, shading="auto")
+        axes[3].set_xlabel("$x_1$")
+        axes[3].set_ylabel("$x_2$")
+        axes[3].set_title("Final state y after BFGS with transformation")
+        fig.colorbar(im3, ax=axes[3])
         plt.tight_layout()
+        
+        plt.savefig("./Seminars/S1_S2/Figures/exercise23.png")
     return result
 
 
 if __name__ == "__main__":
     # # -------------------------- Medium inversion ---------------------------
     # # Exercise 19:
-    # plot_setup()
+    plot_setup()
 
     # # Exercise 20:
-    # plot_gradient_adjoint(mx=21, my=21)
+    plot_gradient_adjoint(mx=21, my=21)
 
     # # Exercise 21:
-    # plot_gradient_fd(mx=21, my=21)
-    # plot_gradient_difference(mx=21, my=21)
+    plot_gradient_difference(mx=21, my=21)
 
-    # # Exercise 22:
-    # exercise_22(mx=21, my=21, plot=True)
+    # Exercise 22:
+    exercise_22(mx=21, my=21, plot=True)
+    
     # Exercise 23:
     exercise_23(mx=21, my=21, plot=True)
     plt.show()

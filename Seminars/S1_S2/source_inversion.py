@@ -306,7 +306,14 @@ def calculate_and_plot_GD(
         Z = np.reshape(z, X.shape)
 
         fig, axes = plt.subplots(4, 1)
-
+        if do_line_search:
+            plt.suptitle(
+                f"Exercise 13: Gradient descent convergence, line search (step size = {step_size})"
+            )
+        else:
+            plt.suptitle(
+                f"Exercise 13: Gradient descent convergence, fixed step size (step size = {step_size})"
+            )
         im1 = axes[0].pcolormesh(X, Y, Z, shading="auto")
         axes[0].set_xlabel("x")
         axes[0].set_ylabel("y")
@@ -384,10 +391,11 @@ def exercise_12():
 def exercise_13(initial_step_size=5000):
     start = time.time()
     calculate_and_plot_GD(step_size=initial_step_size, plot=True, do_line_search=False)
+    print("\nExercise 13:")
     print(f"Time taken with fixed step size: {time.time() - start:.2f} seconds")
     start = time.time()
     calculate_and_plot_GD(step_size=initial_step_size, plot=True, do_line_search=True)
-    print(f"Time taken with line search: {time.time() - start:.2f} seconds")
+    print(f"Time taken with line search: {time.time() - start:.2f} seconds \n")
 
 
 def BFGS(cost_function, u0, cost_args):
@@ -430,7 +438,7 @@ def exercise_14(plot=True):
         Z = np.reshape(z, X.shape)
 
         fig, axes = plt.subplots(3, 1)
-
+        fig.suptitle("Exercise 14: BFGS Optimization Results")
         im1 = axes[0].pcolormesh(X, Y, Z, shading="auto")
         axes[0].set_xlabel("x")
         axes[0].set_ylabel("y")
@@ -471,8 +479,16 @@ def exercise_15():
     u_exact = exact_solution(z, alpha, sbp_discr)
     y_exact = sbp_discr["poisson_solver"](u_exact)
 
-    BFGS_result = BFGS(cost_funtion, u0, (z, alpha, sbp_discr))
-    u_sol = BFGS_result.x
+    y_sol, u_sol, _, _, _ = gradient_descent(
+        u0,
+        z,
+        alpha,
+        sbp_discr,
+        perform_line_search=True,
+        step_size=1e3,
+        tolerance=1e-4,
+        num_iterations=1e4,
+    )
     y_sol = sbp_discr["poisson_solver"](u_sol)
 
     # Plotting the results
@@ -486,6 +502,7 @@ def exercise_15():
     Y_diff = np.reshape(abs(Y_sol - Y_exact), X.shape)
 
     fig, axes = plt.subplots(4, 1)
+    fig.suptitle("Exercise 15: Comparison of Exact and Gradient Descent Solutions")
 
     im2 = axes[0].pcolormesh(X, Y, U_exact, shading="auto")
     axes[0].set_xlabel("x")
@@ -502,13 +519,13 @@ def exercise_15():
     im4 = axes[2].pcolormesh(X, Y, U_diff, shading="auto")
     axes[2].set_xlabel("x")
     axes[2].set_ylabel("y")
-    axes[2].set_title("|U_BFGS - U_exact|")
+    axes[2].set_title("|U_GD - U_exact|")
     fig.colorbar(im3, ax=axes[2])
 
     im4 = axes[3].pcolormesh(X, Y, Y_diff, shading="auto")
     axes[3].set_xlabel("x")
     axes[3].set_ylabel("y")
-    axes[3].set_title("|Y_BFGS - Y_exact|")
+    axes[3].set_title("|Y_GD - Y_exact|")
     fig.colorbar(im4, ax=axes[3])
 
     plt.tight_layout()
@@ -549,6 +566,7 @@ def exercise_16(alpha=1e-4, plot=True):
         Diff = np.reshape(abs(Y_exact - Z), X.shape)
 
         fig, axes = plt.subplots(4, 1)
+
         im0 = axes[0].pcolormesh(X, Y, Z, shading="auto")
         axes[0].set_xlabel("x")
         axes[0].set_ylabel("y")
@@ -573,13 +591,15 @@ def exercise_16(alpha=1e-4, plot=True):
         axes[3].set_title("|Y_exact - Z| ")
         fig.colorbar(im3, ax=axes[3])
 
-        plt.suptitle(f"Alpha = {alpha}, L2 error = {l2_error:.2e}")
+        plt.suptitle(
+            f"Exercise 16: Comparison of Exact and BFGS Solutions (Alpha = {alpha}, L2 error = {l2_error:.2e})"
+        )
         plt.tight_layout()
 
     return l2_error, iterations_BFGS, converged_BFGS, iterations_GD, converged_GD
 
 
-def exercise_16_sweep(alphas = [10**(i) for i in range(-6, 6)]):
+def exercise_16_sweep(alphas=[10 ** (i) for i in range(-6, 6)]):
     L2_Errors = []
     BFGS_results = []
     GD_results = []
@@ -594,6 +614,9 @@ def exercise_16_sweep(alphas = [10**(i) for i in range(-6, 6)]):
 
     # Plots
     fig, axes = plt.subplots(2, 1)
+    fig.suptitle(
+        "Exercise 16: L2 Error and Iterations vs Regularization Parameter Alpha"
+    )
     axes[0].semilogx(alphas, L2_Errors, marker="o")
     axes[0].set_xlabel("Regularization parameter alpha")
     axes[0].set_ylabel("L2 error")
@@ -606,7 +629,9 @@ def exercise_16_sweep(alphas = [10**(i) for i in range(-6, 6)]):
     gd_colors = ["tab:orange" if res[1] else "tab:red" for res in GD_results]
 
     axes[1].semilogx(alphas, bfgs_iterations, label="BFGS", color="tab:blue")
-    axes[1].semilogx(alphas, gd_iterations, label="Gradient Descent", color="tab:orange")
+    axes[1].semilogx(
+        alphas, gd_iterations, label="Gradient Descent", color="tab:orange"
+    )
     axes[1].scatter(alphas, bfgs_iterations, c=bfgs_colors, marker="o")
     axes[1].scatter(alphas, gd_iterations, c=gd_colors, marker="o")
     axes[1].set_xlabel("Regularization parameter alpha")
@@ -647,7 +672,7 @@ if __name__ == "__main__":
     ########################## Seminar 2 ###########################
 
     # Exercise 13:
-    # exercise_13()
+    exercise_13()
 
     # Sometimes the line search takes longer, but it can also lead to faster convergence in terms of iterations. For some big initial step sizes, line search can lead to convergence where fixed step size does not converge. For smaller initial step sizes, line search can lead to slower convergence in terms of iterations, but it can also lead to faster convergence in terms of time.
     # The line search adapts the step size based on the local landscape of the cost function, which can be beneficial in cases where a fixed step size might be too large or too small.
@@ -655,18 +680,18 @@ if __name__ == "__main__":
     # Efficiency: Every backtracking step requires evaluating the cost function = solving PDE. But evaluating gradient involves solving PDE twice.
 
     # Exercise 14:
-    # exercise_14()
+    exercise_14()
     # BFGS is way better than gradient descent for this problem.
 
     # Exercise 15:
-    # exercise_15()
+    exercise_15()
     # Similar results
 
     # Exercise 16:
     alphas = np.logspace(-10, 10, 40)  # Regularization parameters from 10^-6 to 10^6
-    # exercise_16_sweep(alphas)
-    # exercise_16(alpha=1e-10, plot=True)
-    # exercise_16(alpha=1e-5, plot=True)
-    # exercise_16(alpha=1e7, plot=True)
+    exercise_16_sweep(alphas)
+    exercise_16(alpha=1e-10, plot=True)
+    exercise_16(alpha=1e-5, plot=True)
+    exercise_16(alpha=1e7, plot=True)
 
     plt.show()

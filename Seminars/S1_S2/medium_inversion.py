@@ -209,6 +209,10 @@ def exercise_22(mx=21, my=21, plot=True):
     final_discr = pd.assemble_matrices(grid, order, b_sol, bc_opts)
     y_sol = final_discr["poisson_solver"](b_sol)
 
+
+    print("Minimum b:", np.min(b_sol))
+    print("Maximum b:", np.max(b_sol))
+    print("Constraint b > 0 satisfied:", np.all(b_sol > 0))
     # Plotting the results
     if plot:
         X, Y = grid["X"], grid["Y"]

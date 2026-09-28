@@ -4,3 +4,5 @@
 .pytest_cache
 .pyc
 .ruff_cache
+*.zip
+*.pdf

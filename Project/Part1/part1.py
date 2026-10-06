@@ -34,6 +34,19 @@ sbp_ops = pd.assemble_matrices(grid, ORDER, b, bc_opts)
 y0 = sbp_ops["poisson_solver"](u)
 
 
+def investigate_operators():
+    """
+    Investigate the SBP operators and their properties.
+    """
+    # Check size of the operators
+    check_ops = {"a": a0, "b": b, "u": u, "y": y0, **sbp_ops}
+
+    for name, op in check_ops.items():
+        print(f"{name}: shape = {op.shape if hasattr(op, 'shape') else 'N/A'}")
+        
+    print("a:", a0)
+
+
 def loss(a, y_d, sbp_ops):
     """
     Compute the loss function J(a) = ||y(a) - y_d||^2.
@@ -175,5 +188,6 @@ def regularization():
 
 
 if __name__ == "__main__":
-    investigate_gradients()
+    investigate_operators()
+    # investigate_gradients()
     plt.show()

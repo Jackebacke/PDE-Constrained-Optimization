@@ -531,14 +531,13 @@ if __name__ == "__main__":
     ###################### Seminar 3 #########################
     exercise25()
 
-    exercise26(epsilon=1e0)  # Too large for all
+    # exercise26(epsilon=1e0)  # Too large for all
     # exercise26(epsilon=1e-1) # Too large for all
     # exercise26(epsilon=1e-2) # Too large for H1, smooths out way too much
     # exercise26(epsilon=1e-3) # Good for Tikhonov and H1, too large for TV
     # exercise26(epsilon=1e-4) # Good for all methods
     # exercise26(epsilon=1e-6) # Too small for all, leads to oscillations
 
-    exercise27(epsilon_values=np.array([1e-6, 1e-4, 1e-2, 1e0]))  
-    
-    
+    # exercise27(epsilon_values=np.array([1e-6, 1e-4, 1e-2, 1e0]))
+
     plt.show()

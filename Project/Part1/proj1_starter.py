@@ -65,6 +65,7 @@ def plot_data_proj1():
     axes[2].set_title("Thermal diffusivity b")
     axes[3].set_title("State y with a=1 everywhere")
     plt.tight_layout()
+    plt.savefig(path / "Figures" / "setup.png", dpi=600)
     plt.show()
 
 
@@ -84,7 +85,9 @@ def b_fun(X, Y):
     return 10.0 + 2 * np.sin(np.pi * X) + 2 * np.cos(np.pi * Y)
 
 
-def subplots_2d(X, Y, fields, sz=None):
+def subplots_2d(
+    X, Y, fields, sz=None, figsize=None, vmin=None, vmax=None, shared_colorbar=False
+):
     """Helper function that plots several 2d plots in one figure.
     X, Y: Coordinate arrays (from np.meshgrid)
     fields: list of fields to plot. One subplot per field.
@@ -92,16 +95,25 @@ def subplots_2d(X, Y, fields, sz=None):
     fields = [np.reshape(f, X.shape) for f in fields]
     n_fields = len(fields)
     if sz is None:
-        fig, axes = plt.subplots(n_fields, 1)
+        fig, axes = plt.subplots(n_fields, 1, figsize=figsize)
     else:
-        fig, axes = plt.subplots(*sz)
+        fig, axes = plt.subplots(*sz, figsize=figsize)
         axes = axes.flatten()
     im = []
+
     for i in range(n_fields):
-        im.append(axes[i].pcolormesh(X, Y, fields[i], shading="auto"))
-        fig.colorbar(im[i])
+        im.append(
+            axes[i].pcolormesh(X, Y, fields[i], shading="auto", vmin=vmin, vmax=vmax)
+        )
         axes[i].set_xlabel("x")
         axes[i].set_ylabel("y")
+
+    if shared_colorbar:
+        fig.colorbar(im[0], ax=axes)
+    else:
+        for i in range(n_fields):
+            fig.colorbar(im[i], ax=axes[i])
+
     return fig, axes
 
 

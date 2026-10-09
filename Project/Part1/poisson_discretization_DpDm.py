@@ -181,7 +181,7 @@ def assemble_matrices(grid, order, b=None, bc_opts=None):
     ops["dt_e"] = e_e.T @ Dy_m @ e_e
     ops["dt_s"] = e_s.T @ Dx_m @ e_s
     ops["dt_n"] = e_n.T @ Dx_m @ e_n
-    ops["Dt"] = block_diag([ops["dt_n"], ops["dt_s"], ops["dt_e"], ops["dt_n"]])
+    ops["Dt"] = block_diag([ops["dt_w"], ops["dt_s"], ops["dt_e"], ops["dt_n"]])
 
     # Face quadratures
     ops["H_s"] = Hx

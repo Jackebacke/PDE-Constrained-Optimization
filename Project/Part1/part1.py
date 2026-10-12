@@ -557,8 +557,10 @@ if __name__ == "__main__":
     #### Regularization ####
     # investigate_reg_gradients()
 
-    result_reg = regularized_minimization(epsilon=1e-8, gamma=1e-6)
+    result_reg = regularized_minimization(epsilon=1e-1, gamma=1e-6)
 
-    epsilon_values = [10 ** (i) for i in range(-6, 3)]
+    epsilon_values = np.logspace(
+        -8, 1.5, 20
+    ) 
     # sweep_epsilon_values(epsilon_values, gamma=1e-6)
     plt.show()

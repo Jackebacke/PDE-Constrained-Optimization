@@ -235,7 +235,7 @@ so that
 
 
 
-\section{Results}
+\section{Results \& Discussion}
 \subsection{Adjoint gradient}
 The adjoint gradient $\frac{\partial L}{\partial a}$ compared to the finite difference (FD) gradient can be seen in Figure~\ref{fig:p1_gradient_comparison}. The difference is small, and therefore the adjoint gradient can be assumed to be correctly implemented. 
 
@@ -257,7 +257,7 @@ The adjoint gradient $\frac{\partial L}{\partial a}$ compared to the finite diff
 \end{figure}
 
 \subsection{First optimization}
-Without regularizing or reparameterization, the optimized $a$ was reached after $482$ BFGS iterations and at a final data mismatch cost $J \approx 1.307$ (Figure~\ref{fig:p1_initial_optimization}). 
+Without regularizing or reparameterization, the optimized $a$ was reached after $482$ BFGS iterations and at a final data mismatch cost $J \approx 1.307$ (Figure~\ref{fig:p1_initial_optimization}). We can see that the solution $a$ is noisy and contains values below 0, which is nonphysical. 
 
 \begin{figure}[H]
     \centering
@@ -277,7 +277,7 @@ Without regularizing or reparameterization, the optimized $a$ was reached after 
 \end{figure}
 
 \subsection{Reparameterization}
-By utilising the reparametrization \eqref{eq:p1_reparametrization}, an optimized $a$ was reached after $622$ BFGS iterations and at a final data mismatch cost $J \approx 1.332$ (Figure~\ref{fig:p1_reparam_optimization}). 
+By utilising the reparametrization \eqref{eq:p1_reparametrization}, an optimized $a$ was reached after $622$ BFGS iterations and at a final data mismatch cost $J \approx 1.332$ (Figure~\ref{fig:p1_reparam_optimization}). The solution $a$ is still noisy, but the values below 0 are now gone. 
 
 
 \begin{figure}[H]
@@ -298,7 +298,7 @@ By utilising the reparametrization \eqref{eq:p1_reparametrization}, an optimized
 \end{figure}
 
 \subsection{Regularized and reparameterized optimization}
-Using both reparameterization and TV--regularization, the final $a$ solution can be found. First, the TV--gradient must be validated (Figure~\ref{fig:p1_TV_gradient_comparison}) and the optimal $\varepsilon$ value be found (Figure~\ref{fig:p1_epsilon_error_norm}).
+Using both reparameterization and TV--regularization, the final $a$ solution can be found. First, the TV--gradient must be validated and a good $\varepsilon$ value be found . Figure~\ref{fig:p1_TV_gradient_comparison} shows that the finite difference gradient matches with the analytical gradient. In Figure~\ref{fig:p1_epsilon_error_norm}, we can see 4 distinct regions in the dependency of $\varepsilon$. Up to $\varepsilon\approx 10^{-5}$ and between $10^{-1}\leq \varepsilon \leq 7$, the error remains nearly constant. Where $10^{-4}\leq \varepsilon \leq 10^{-1}$, the error has a strong dependency on $\epsilon$. After $\varepsilon\gtrsim 7$ the error grows significantly. 
 
 \begin{figure}[H]
     \centering
@@ -328,13 +328,18 @@ Using both reparameterization and TV--regularization, the final $a$ solution can
  A final optimized $a$ can then be reached after $622$ BFGS iterations and at a final data mismatch cost $J \approx 1.332$ (Figure~\ref{fig:p1_regularized_optimization}) by using $\varepsilon=$.
 \begin{figure}[H]
     \centering
-     \begin{subfigure}[b]{0.55\textwidth}
+     \begin{subfigure}[t]{0.7\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Project/Part1/Figures/regularized_optimization_epsilon_0.001_a.png}
         \caption{Optimized $a$ solution.}
     \end{subfigure}
     \hfill
-    \begin{subfigure}[b]{0.40\textwidth}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Project/Part1/Figures/reparam_optimization_y.png}
+        \caption{Optimized state $y$.}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Project/Part1/Figures/reparam_optimization_y.png}
         \caption{Optimized state $y$.}
@@ -343,4 +348,3 @@ Using both reparameterization and TV--regularization, the final $a$ solution can
     \label{fig:p1_regularized_optimization}
 \end{figure}
 
-\section{Discussion}

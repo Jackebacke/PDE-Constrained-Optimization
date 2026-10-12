@@ -3,10 +3,12 @@
 \usepackage[utf8]{inputenc} % allows utf8 source code
 \usepackage[T1]{fontenc}    % correct character encoding
 \usepackage[margin=2.5cm]{geometry}    % 2.5cm page margins
+
 % include/add only packages you really use
 \usepackage{mathtools, graphicx, url}
 \usepackage[hidelinks]{hyperref}
-\usepackage{amsmath, amssymb, svg}
+\usepackage{float} % For [H]
+\usepackage{amsmath, amssymb, svg, bm}
 % for the appendix and having the reference list in the toc
 \usepackage[toc,page]{appendix}
 \usepackage[nottoc]{tocbibind}  % nottoc excludes the ToC from the Table of Contents
@@ -24,8 +26,21 @@
 \usepackage{xcolor}
 % \usepackage{physics}
 \usepackage{algorithm}
-\usepackage{algpseudocode}
 % \usepackage{sfmath}
+
+
+% ---------- Macros ----------
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\Om}{\Omega}
+\newcommand{\dOm}{\partial\Omega}
+\newcommand{\bx}{\bar{x}}
+\newcommand{\pn}{\partial_{n}}
+\newcommand{\yd}{y_{\mathrm{d}}}
+\newcommand{\yadj}{y^{\dagger}}
+\newcommand{\Hb}{H_{\partial\Omega}}
+\newcommand{\Bb}{B_{\partial\Omega}}
+\newcommand{\eb}{e_{\partial\Omega}}
+\newcommand{\one}{\mathbf{1}}
 
 \title{PDE-Constrained Optimization Project}
 \author{Jakob Nilsson}
@@ -38,6 +53,8 @@
 \vfill
 \tableofcontents
 \newpage
+
+\include{Project/Report/part1}
 
 
 \end{document}

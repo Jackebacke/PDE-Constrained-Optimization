@@ -242,7 +242,9 @@ def investigate_optimization(
 
     print("Success:", result.success)
     print("Message:", result.message)
-    print("Final cost:", result.fun)
+    print("Final cost (Objective function):", result.fun)
+    J = cost(a_solution, Y_d)
+    print("Final cost (Data misfit J(a)):", J)
 
     bc_opts = {"type": "robin", "a": a_solution}
     sbp_ops = pd.assemble_matrices(grid, ORDER, b, bc_opts)
@@ -472,7 +474,7 @@ def regularized_minimization(epsilon=1e-3, gamma=1e-6, plot=True):
     return result
 
 
-def sweep_epsilon_values(epsilon_values, gamma=1e-6):
+def sweep_epsilon_values(epsilon_values, gamma=1e-6, plot_cost_histogram=False):
     """
     Sweep over different epsilon values for regularization and plot results.
     """
@@ -486,35 +488,55 @@ def sweep_epsilon_values(epsilon_values, gamma=1e-6):
     print("Plotting results for all epsilon values.")
 
     # Plot loss vs iteration for each epsilon
-    fig, axes = plt.subplots(1, 2, figsize=(8, 6))
+    if plot_cost_histogram:
+        fig, axes = plt.subplots(1, 2, figsize=(8, 6))
+        for epsilon, result in results.items():
+            print(f"Plotting results for epsilon={epsilon}")
+            if hasattr(result, "allvecs"):
+                losses = [cost(a, Y_d) for a in result.allvecs]
+                objective_loss = [
+                    cost(a, Y_d) + epsilon * TV_regularization(a)
+                    for a in result.allvecs
+                ]
+                axes[0].semilogy(losses, label=f"epsilon={epsilon}")
+                axes[1].semilogy(objective_loss, label=f"epsilon={epsilon}")
+
+        axes[0].set_title("Data misfit loss", fontsize=12, fontweight="bold")
+        axes[0].set_xlabel("Iteration")
+        axes[0].set_ylabel("Loss J(a)")
+        axes[0].legend()
+        axes[0].grid()
+
+        axes[1].set_title("Objective loss", fontsize=12, fontweight="bold")
+        axes[1].set_xlabel("Iteration")
+        axes[1].set_ylabel("Loss J(a)")
+        axes[1].legend()
+        axes[1].grid()
+
+        plt.savefig(
+            figures_path / "loss_vs_iteration_sweep_epsilon.png",
+            dpi=600,
+            bbox_inches="tight",
+        )
+
+    # y-y_d norm vs epsilon
+    y_norms = []
     for epsilon, result in results.items():
-        print(f"Plotting results for epsilon={epsilon}")
-        if hasattr(result, "allvecs"):
-            losses = [cost(a, Y_d) for a in result.allvecs]
-            objective_loss = [
-                cost(a, Y_d) + epsilon * TV_regularization(a) for a in result.allvecs
-            ]
-            axes[0].semilogy(losses, label=f"epsilon={epsilon}")
-            axes[1].semilogy(objective_loss, label=f"epsilon={epsilon}")
+        a_solution = result.x
+        bc_opts = {"type": "robin", "a": a_solution}
+        sbp_ops = pd.assemble_matrices(grid, ORDER, b, bc_opts)
+        y_solution = sbp_ops["poisson_solver"](u)
+        y_norms.append((y_solution - Y_d).T @ sbp_ops["H"] @ (y_solution - Y_d))
 
-    axes[0].set_title("Data misfit loss", fontsize=12, fontweight="bold")
-    axes[0].set_xlabel("Iteration")
-    axes[0].set_ylabel("Loss J(a)")
-    axes[0].legend()
-    axes[0].grid()
-
-    axes[1].set_title("Objective loss", fontsize=12, fontweight="bold")
-    axes[1].set_xlabel("Iteration")
-    axes[1].set_ylabel("Loss J(a)")
-    axes[1].legend()
-    axes[1].grid()
-
+    plt.figure(figsize=(6, 4))
+    plt.loglog(epsilon_values, y_norms, marker="o")
+    plt.xlabel("$\\varepsilon$")
+    plt.ylabel("$||y(a) - y_d||_H^2$")
+    plt.title("Error norm vs epsilon", fontsize=12, fontweight="bold")
+    plt.grid()
     plt.savefig(
-        figures_path / "loss_vs_iteration_sweep_epsilon.png",
-        dpi=600,
-        bbox_inches="tight",
+        figures_path / "error_norm_vs_epsilon.png", dpi=600, bbox_inches="tight"
     )
-    plt.show()
 
 
 if __name__ == "__main__":
@@ -535,8 +557,8 @@ if __name__ == "__main__":
     #### Regularization ####
     # investigate_reg_gradients()
 
-    # result_reg = regularized_minimization(epsilon=1e-3, gamma=1e-6)
+    result_reg = regularized_minimization(epsilon=1e-8, gamma=1e-6)
 
     epsilon_values = [10 ** (i) for i in range(-6, 3)]
-    sweep_epsilon_values(epsilon_values, gamma=1e-6)
+    # sweep_epsilon_values(epsilon_values, gamma=1e-6)
     plt.show()

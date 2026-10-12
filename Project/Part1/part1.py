@@ -275,6 +275,17 @@ def investigate_optimization(
         plt.grid()
         plt.savefig(figures_path / f"{filename}_loss.png", dpi=600, bbox_inches="tight")
 
+    # Plot y-yd
+    y_diff = np.abs(y_solution - Y_d)
+    fig, ax = plt.subplots(figsize=(6, 5))
+    Y_diff = np.reshape(y_diff, X.shape)
+    im = ax.pcolormesh(X, Y, Y_diff, shading="auto")
+    ax.set_title("Difference y - yd", fontsize=12, fontweight="bold")
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    fig.colorbar(im, ax=ax)
+    plt.savefig(figures_path / f"{filename}_error.png", dpi=600, bbox_inches="tight")
+
 
 def initial_minimization():
     """
@@ -538,6 +549,21 @@ def sweep_epsilon_values(epsilon_values, gamma=1e-6, plot_cost_histogram=False):
         figures_path / "error_norm_vs_epsilon.png", dpi=600, bbox_inches="tight"
     )
 
+    y_d_norm = Y_d.T @ sbp_ops["H"] @ Y_d
+    relative_errors = [norm / y_d_norm for norm in y_norms]
+    # Relative error norm vs epsilon
+    plt.figure(figsize=(6, 4))
+    plt.loglog(epsilon_values, relative_errors, marker="o")
+    plt.xlabel("$\\varepsilon$")
+    plt.ylabel("$||y(a) - y_d||_H^2 / ||y_d||_H^2$")
+    plt.title("Relative error norm vs epsilon", fontsize=12, fontweight="bold")
+    plt.grid()
+    plt.savefig(
+        figures_path / "relative_error_norm_vs_epsilon.png",
+        dpi=600,
+        bbox_inches="tight",
+    )
+
 
 if __name__ == "__main__":
     #### Initial Minimization and Investigation ####
@@ -557,10 +583,8 @@ if __name__ == "__main__":
     #### Regularization ####
     # investigate_reg_gradients()
 
-    result_reg = regularized_minimization(epsilon=1e-1, gamma=1e-6)
+    result_reg = regularized_minimization(epsilon=1e2, gamma=1e-6)
 
-    epsilon_values = np.logspace(
-        -8, 1.5, 20
-    ) 
+    epsilon_values = np.logspace(-8, 1.5, 20)
     # sweep_epsilon_values(epsilon_values, gamma=1e-6)
     plt.show()

@@ -91,7 +91,7 @@ def cost(a, y_d):
     Compute the loss function J(a) = ||y(a) - y_d||^2.
 
     Parameters:
-    - a: Thermal diffusivity coefficients (array of shape (4*N,))
+    - a: Thermal transfer coefficients (array of shape (4*N,))
     - y_d: Observed data (array of shape (N,))
     - sbp_ops: Dictionary containing SBP operators and solver
 
@@ -115,7 +115,7 @@ def FD_gradient(a, y_d, delta=1e-6):
     Compute the gradient of the loss function J(a) with respect to a using finite differences.
 
     Parameters:
-    - a: Thermal diffusivity coefficients (array of shape (4*N,))
+    - a: Thermal transfer coefficients (array of shape (4*N,))
     - y_d: Observed data (array of shape (N,))
     - sbp_ops: Dictionary containing SBP operators and solver
 
@@ -143,7 +143,7 @@ def adjoint_gradient(a, y_d):
     Compute the gradient of the loss function J(a) with respect to a using the adjoint method.
 
     Parameters:
-    - a: Thermal diffusivity coefficients (array of shape (4*N,))
+    - a: Thermal transfer coefficients (array of shape (4*N,))
     - y_d: Observed data (array of shape (N,))
     - sbp_ops: Dictionary containing SBP operators and solver
 
@@ -251,7 +251,7 @@ def investigate_optimization(
     y_solution = sbp_ops["poisson_solver"](u)
 
     # Plot a solution
-    plot_boundary_values([a_solution], title=f"{title} Thermal Diffusivity a")
+    plot_boundary_values([a_solution], title=f"{title} Thermal Transfer Coefficients a")
     plt.savefig(figures_path / f"{filename}_a.png", dpi=600, bbox_inches="tight")
 
     # Plot y solution
@@ -305,7 +305,7 @@ def initial_minimization():
 
 def reparametrization(a, a0=1e-6, variable_out="a"):
     """
-    Reparameterize the thermal diffusivity coefficients a to ensure positivity.
+    Reparameterize the thermal transfer coefficients a to ensure positivity.
     """
     if variable_out == "a":
         return a0 + a**2
@@ -582,8 +582,10 @@ if __name__ == "__main__":
 
     #### Regularization ####
     # investigate_reg_gradients()
-
-    result_reg = regularized_minimization(epsilon=1e2, gamma=1e-6)
+    # for epsilon in [1e-5, 1e-3, 1e-1]:
+    #     print(f"Running regularized minimization with epsilon={epsilon}")
+    #     result_reg = regularized_minimization(epsilon=epsilon, gamma=1e-6)
+    regularized_minimization(epsilon=1e-1, gamma=1e-6)
 
     epsilon_values = np.logspace(-8, 1.5, 20)
     # sweep_epsilon_values(epsilon_values, gamma=1e-6)

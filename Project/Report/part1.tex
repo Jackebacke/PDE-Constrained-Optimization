@@ -9,7 +9,7 @@ b\,\pn y + a\,y = 0, & \bx\in\dOm,
 \end{cases}
 \label{eq:pde}
 \end{equation}
-where $b(\bx)$ is the known thermal diffusivity and $a(\bx)$ is the unknown heat transfer coefficient through the boundary. The initial setup can be seen in Figure~\ref{fig:p1_setup}.
+where $b(\bx)$ is the known thermal diffusivity and $a(\bx)$ is the unknown heat transfer coefficient through the boundary. The problem then becomes, minimize the cost $\mathcal{J}(y)$ subject to \eqref{eq:pde}. The initial setup can be seen in Figure~\ref{fig:p1_setup}.
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{Project/Part1/Figures/setup.png}
@@ -22,9 +22,9 @@ where $b(\bx)$ is the known thermal diffusivity and $a(\bx)$ is the unknown heat
 
 \paragraph{Prior knowledge}
 \begin{itemize}
-  \item Initial guess $a_0(\bx)=1$.
+  \item Initial guess $a_\text{init}(\bx)=1$.
   \item $a(\bx)>0$: This can be exploited through reparametrization. 
-  \item $a(\bx)$ is piecewise constant along $\dOm$ and may have discontinuities: Motivates TV regularization, which promotes piecewise smooth solutions with discontinuities. 
+  \item $a(\bx)$ is piecewise constant along $\dOm$ and may have discontinuities: Motivates TV regularization, which promotes piecewise constant solutions with discontinuities. 
  \item $y_d$ is noisy with uniform errors $\pm10\%$: Motivates regularization for less overfitting. 
 \end{itemize}
 
@@ -98,16 +98,18 @@ Let $y,\yd,u\in\mathbb{R}^{m_x \times m_y}$ be grid functions and $H$ the SBP qu
 The discrete cost is then
 \begin{equation}
 J(y)=\frac12 (y-\yd)^T H\,(y-\yd).
+\label{eq:discrete_cost}
 \end{equation}
-The SBT-SAT discretization of equation \eqref{eq:pde} is
+The SBP-SAT discretization of equation \eqref{eq:pde} is
 \begin{equation}
 (D_{x_1}^{+}BD_{x_1}^{-}+D_{x_2}^{+}BD_{x_2}^{-})y
 =u+H^{-1}\eb\,\Hb\big(\Bb\, d_n^{T}y+A\,\eb^{T}y\big),
 \end{equation}
 which can be written compactly as
 \begin{equation}
-\boxed{D(a)\,y=u},\qquad
+\boxed{D(a)\,y=u}\qquad
 D=D_{x_1}^{+}BD_{x_1}^{-}+D_{x_2}^{+}BD_{x_2}^{-}-H^{-1}\eb\,\Hb\big(\Bb\, d_n^{T}+A\,\eb^{T}\big).
+\label{eq:discrete_pde}
 \end{equation}
 Here
 \begin{equation}
@@ -121,7 +123,7 @@ e_W^TBe_W & & &\\
 A=\operatorname{diag}(a)
 \end{equation}
 where $a\in\mathbb{R}^{n_{\partial\Omega}}$ holds the values of $a$ at the boundary
-grid points (ordered $W,S,E,N$ as in $\eb$), and $A$ is its diagonal matrix.
+grid points (ordered $W,S,E,N$ as in $\eb$), and $A$ is its diagonal matrix. The discrete problem then becomes, minimize $J(y)$ \eqref{eq:discrete_cost} subject to \eqref{eq:discrete_pde}.
 
 \subsubsection{Discrete adjoint method}
 %==========================================================
@@ -298,7 +300,9 @@ By utilising the reparametrization \eqref{eq:p1_reparametrization}, an optimized
 \end{figure}
 
 \subsection{Regularized and reparameterized optimization}
-Using both reparameterization and TV--regularization, the final $a$ solution can be found. First, the TV--gradient must be validated and a good $\varepsilon$ value be found . Figure~\ref{fig:p1_TV_gradient_comparison} shows that the finite difference gradient matches with the analytical gradient. In Figure~\ref{fig:p1_epsilon_error_norm}, we can see 4 distinct regions in the dependency of $\varepsilon$. Up to $\varepsilon\approx 10^{-5}$ and between $10^{-1}\leq \varepsilon \leq 7$, the error remains nearly constant. Where $10^{-4}\leq \varepsilon \leq 10^{-1}$, the error has a strong dependency on $\epsilon$. After $\varepsilon\gtrsim 7$ the error grows significantly. 
+Using both reparameterization and TV--regularization, the final $a$ solution can be found. First, the TV--gradient must be validated and a good $\varepsilon$ value be found . Figure~\ref{fig:p1_TV_gradient_comparison} shows that the finite difference gradient matches with the analytical gradient. 
+
+In Figure~\ref{fig:p1_epsilon_error_norm}, we can see 4 distinct regions in the dependency of $\varepsilon$. Up to $\varepsilon\approx 10^{-5}$ and between $10^{-1}\leq \varepsilon \leq 7$, the error remains nearly constant. The first of these regions could be a sign of overfitting to the data or that the regularization strength barely affects the solution. Where $10^{-4}\leq \varepsilon \leq 10^{-1}$, the error has a strong dependency on $\varepsilon$. After $\varepsilon\gtrsim 7$ the error becomes bigger, possibly showing that the regularization strength is too big. Also worth noting is that the range of errors is very small between different $\varepsilon$, highlighting the ill-posedness of this inversion problem. 
 
 \begin{figure}[H]
     \centering
@@ -324,8 +328,53 @@ Using both reparameterization and TV--regularization, the final $a$ solution can
     \label{fig:p1_epsilon_error_norm}
 \end{figure}
 
+Solutions for different $\varepsilon$ can be seen below. 
 
- A final optimized $a$ can then be reached after $622$ BFGS iterations and at a final data mismatch cost $J \approx 1.332$ (Figure~\ref{fig:p1_regularized_optimization}) by using $\varepsilon=$.
+\begin{figure}[H]
+    \centering
+     \begin{subfigure}[t]{0.7\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Project/Part1/Figures/regularized_optimization_epsilon_1e-05_a.png}
+        \caption{Optimized $a$ solution.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Project/Part1/Figures/regularized_optimization_epsilon_1e-05_y.png}
+        \caption{Optimized state $y$.}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Project/Part1/Figures/regularized_optimization_epsilon_1e-05_error.png}
+        \caption{Data error $|y-y_d|$.}
+    \end{subfigure}
+    \caption{Regularized and reparameterized solution of inversion problem ($\varepsilon=10^{-5}$).}
+    \label{fig:p1_regularized_optimization_eps-1e-5}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+     \begin{subfigure}[t]{0.7\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Project/Part1/Figures/regularized_optimization_epsilon_0.1_a.png}
+        \caption{Optimized $a$ solution.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Project/Part1/Figures/regularized_optimization_epsilon_0.1_y.png}
+        \caption{Optimized state $y$.}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Project/Part1/Figures/regularized_optimization_epsilon_0.1_error.png}
+        \caption{Data error $|y-y_d|$.}
+    \end{subfigure}
+    \caption{Regularized and reparameterized solution of inversion problem ($\varepsilon=10^{-1}$).}
+    \label{fig:p1_regularized_optimization_eps-0.1}
+\end{figure}
+
 \begin{figure}[H]
     \centering
      \begin{subfigure}[t]{0.7\textwidth}
@@ -336,15 +385,25 @@ Using both reparameterization and TV--regularization, the final $a$ solution can
     \hfill
     \begin{subfigure}[b]{0.45\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Project/Part1/Figures/reparam_optimization_y.png}
+        \includegraphics[width=\textwidth]{Project/Part1/Figures/regularized_optimization_epsilon_0.001_y.png}
         \caption{Optimized state $y$.}
     \end{subfigure}
     \begin{subfigure}[b]{0.45\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Project/Part1/Figures/reparam_optimization_y.png}
-        \caption{Optimized state $y$.}
+        \includegraphics[width=\textwidth]{Project/Part1/Figures/regularized_optimization_epsilon_0.001_error.png}
+        \caption{Data error $|y-y_d|$.}
     \end{subfigure}
     \caption{Regularized and reparameterized solution of inversion problem ($\varepsilon=10^{-3}$).}
-    \label{fig:p1_regularized_optimization}
+    \label{fig:p1_regularized_optimization_eps-1e-3}
 \end{figure}
+
+
+In Figure~\ref{fig:p1_regularized_optimization_eps-1e-5}, we can see that the solution $a$ closely matches the unregularized solution in Figure~\ref{fig:p1_reparam_optimization}. This means that the TV regularization strength likely is too small. With a very large $\varepsilon$, seen in Figure~\ref{fig:p1_regularized_optimization_eps-0.1}, we see the effect of the regularization. We can also see that this large $\varepsilon$ smoothes the boundary values to nearly constant. This could mean that this $\varepsilon$ value is too big.
+
+We expect piecewise constant solutions for $a$, which leads me to believe that the correct $\varepsilon$ is somewhere between $10^{-5}$ and $10^{-1}$, such as $\varepsilon=10^{-3}$, seen in Figure~\ref{fig:p1_regularized_optimization_eps-1e-3}. Here, the solution is nearly piecewise constant. We can also see that the optimized state $y$ and the data mismatch $|y-y_d|$ is very similar regardless of $a$, further highlighting the ill-posedness of the problem. It is therefore difficult to say which $a$ and $\varepsilon$ is correct. My best estimate of $a$ can therefore be seen in Figure~\ref{fig:p1_regularized_optimization_eps-1e-3}.
+
+
+
+
+
 
